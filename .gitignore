@@ -1,5 +1,5 @@
-*.o
 *.so
 *.out
 
-bin/
+mineclone
+bin/*.o
