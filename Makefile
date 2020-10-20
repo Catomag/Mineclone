@@ -10,7 +10,7 @@ again: clean mineclone
 
 mineclone: $(OBJ)
 	echo $(SOURCES)
-	gcc -W $^ -lGL deps/glad.o -lopenal -lglfw -lpthread -lm -ldl -o $@
+	gcc -W $^ -lGL deps/glad.o -lglfw -lpthread -lm -ldl -o $@
 
 bin/%.o : src/%.c
 	gcc $(INCLUDE) $(CFLAGS) -c $< -o $@

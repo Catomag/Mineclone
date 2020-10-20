@@ -24,39 +24,39 @@ Buffer load_file(const char* filename) {
 	buf.size = ftell(file);
 	rewind(file);
 
-	buf.data = (byte*) malloc(sizeof(byte) * buf.size);
+	buf.data = (byte*) malloc(sizeof(byte) * (buf.size + 1));
 	fread(buf.data, sizeof(byte), buf.size, file);
+	buf.data[buf.size] = '\0';
+	buf.size += 1;
+
 	fclose(file);
 	
 	return buf;
 }
 
 uint load_shader(const char* vertex_shader_file, const char* frag_shader_file) {
-	this_ran();
 	Buffer buf = load_file(frag_shader_file);
 
 	uint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(frag_shader, 1, (const GLchar *const *) buf.data, NULL);
+	glShaderSource(frag_shader, 1, (const GLchar *const *) &buf.data, NULL);
 	glCompileShader(frag_shader);
 
-	int success;
+	int success = 0;
 	char info_log[512];
 	glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &success);
 	if(!success) {
-		glad_glGetShaderInfoLog(frag_shader, 512, NULL, info_log);
+		glGetShaderInfoLog(frag_shader, 512, NULL, info_log);
 		printf("Failed to compile frag shader: \"%s\"\n", info_log);
 		exit(-1);
 	}
 
 	buf.size = 0;
-	this_ran();
 	free(buf.data);
 
-	this_ran();
 	buf = load_file(vertex_shader_file);
 
-	uint vertex_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(vertex_shader, 1, (const GLchar *const *) buf.data, NULL);
+	uint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, 1, (const GLchar *const *) &buf.data, NULL);
 	glCompileShader(vertex_shader);
 
 	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
@@ -66,9 +66,7 @@ uint load_shader(const char* vertex_shader_file, const char* frag_shader_file) {
 		exit(-1);
 	}
 
-	this_ran();
 	buf.size = 0;
-	this_ran();
 	free(buf.data);
 
 	uint program = glCreateProgram();
@@ -83,7 +81,6 @@ uint load_shader(const char* vertex_shader_file, const char* frag_shader_file) {
 		exit(-1);
 	}
 	
-	this_ran();
 	glDeleteShader(vertex_shader);
 	glDeleteShader(frag_shader);
 	return program;
@@ -117,7 +114,7 @@ int main() {
 
 	uint shader_program = load_shader("assets/vert.glsl", "assets/frag.glsl");
 	uint vao;
-	uint eao;
+	uint ebo;
 	uint vbo;
 
 	float verts[] = {
@@ -135,7 +132,7 @@ int main() {
 	glGenVertexArrays(1, &vao);
 
 	glBindVertexArray(vao);
-	glGenBuffers(1, &eao);
+	glGenBuffers(1, &ebo);
 	glGenBuffers(1, &vbo);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -143,13 +140,20 @@ int main() {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	glUseProgram(shader_program);
+	glBindVertexArray(vao);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	while(!glfwWindowShouldClose(window)) {
-		glClearColor(0.0, 0.4, 0.3, 1);
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
