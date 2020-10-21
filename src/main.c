@@ -184,27 +184,36 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	float transform[16] = {
+	float transform[] = {
 		1.f, 0.f, 0.f, 0.f,
 		0.f, 1.f, 0.f, 0.f,
 		0.f, 0.f, 1.f, 0.f,
 		0.f, 0.f, 0.f, 1.f
 	};
 
-//	float angle = PI * 0.25f;
-//	transform[5] =   cos(angle);
-//	transform[6] =  -sin(angle);
-//	transform[9] =   sin(angle);
-//	transform[10] =  cos(angle);
-
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, transform);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	float angle = PI * 0.25f;
 
+	float prev_time = 0;
 	while(!glfwWindowShouldClose(window)) {
+		angle += glfwGetTime() - prev_time;
+		prev_time = glfwGetTime();
+
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, transform);
+		// rotate around x axis
+		transform[5] =   cos(angle);
+		transform[6] =  -sin(angle);
+		transform[9] =   sin(angle);
+		transform[10] =  cos(angle);
+
+		// rotate around y axis
+
+		// rotate around z axis
+
 		glfwSwapBuffers(window);
 		glClearColor(.25, .5, .25, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
