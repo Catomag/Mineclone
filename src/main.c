@@ -4,7 +4,9 @@
 
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
+
 #include "../include/types.h"
+#include "../include/transform.h"
 
 
 #define PI 3.14159
@@ -195,6 +197,33 @@ int main() {
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
+
+	Transform a = {
+		2.f, 7.f, 9.f, 1.f,
+		8.f, 4.f, 7.f, 5.f,
+		9.f, 1.f, 5.f, 3.f,
+		6.f, 2.f, 7.f, 6.f
+	};
+
+	Transform_print(a);
+	printf("\n");
+
+	Transform b = {
+		0.f, 5.f, 5.f, 2.f,
+		9.f, 4.f, 1.f, 1.f,
+		2.f, 8.f, 0.f, 2.f,
+		5.f, 4.f, 1.f, 4.f
+	};
+
+	Transform_print(b);
+	printf("\n");
+
+	Transform t;
+	Transform_identity(t);
+	Transform_multiply(t, a, b);
+
+	Transform_print(t);
+	printf("\n");
 
 	float angle = PI * 0.25f;
 
