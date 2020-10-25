@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "../include/types.h"
-#include "../include/transform.h"
+#include "../include/matrix.h"
 
 
 #define PI 3.14159
@@ -186,65 +186,44 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	float transform[] = {
-		1.f, 0.f, 0.f, 0.f,
-		0.f, 1.f, 0.f, 0.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.f, 0.f, 0.f, 1.f
-	};
+	Matrix transform;
+	Matrix_identity(transform);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
-	Transform a = {
-		2.f, 7.f, 9.f, 1.f,
-		8.f, 4.f, 7.f, 5.f,
-		9.f, 1.f, 5.f, 3.f,
-		6.f, 2.f, 7.f, 6.f
-	};
-
-	Transform_print(a);
-	printf("\n");
-
-	Transform b = {
-		0.f, 5.f, 5.f, 2.f,
-		9.f, 4.f, 1.f, 1.f,
-		2.f, 8.f, 0.f, 2.f,
-		5.f, 4.f, 1.f, 4.f
-	};
-
-	Transform_print(b);
-	printf("\n");
-
-	Transform t;
-	Transform_identity(t);
-	Transform_multiply(t, a, b);
-
-	Transform_print(t);
-	printf("\n");
-
-	float angle = PI * 0.25f;
+	float angle = -1.f;
+	float delta = 0;
 
 	float prev_time = 0;
+	float pos = 0;
 	while(!glfwWindowShouldClose(window)) {
-		angle += glfwGetTime() - prev_time;
+		delta = glfwGetTime() - prev_time;
 		prev_time = glfwGetTime();
 
+		if(pos > 1.f || pos < -1.f)
+			angle *= -1.f;
+		pos += angle * delta * .5f;
+
+		Matrix_identity(transform);
+
+		Matrix_rotateX(transform, pos * PI);
+		Matrix_rotateY(transform, pos * PI);
+		Matrix_scale(transform, (Vec3) { pos, pos, pos });
+		Matrix_translate(transform, (Vec3) { pos*.5f, pos*.5f, pos*.25f });
+
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, transform);
+
 		// rotate around x axis
-		transform[5] =   cos(angle);
-		transform[6] =  -sin(angle);
-		transform[9] =   sin(angle);
-		transform[10] =  cos(angle);
 
 		// rotate around y axis
 
 		// rotate around z axis
 
 		glfwSwapBuffers(window);
-		glClearColor(.25, .5, .25, 1);
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
