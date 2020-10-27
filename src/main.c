@@ -187,7 +187,16 @@ int main() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	Matrix transform;
+	Matrix view;
+	Matrix projection;
+
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+
 	Matrix_identity(transform);
+	Matrix_identity(view);
+	Matrix_identity(projection);
+	Matrix_projection(projection, PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -199,6 +208,7 @@ int main() {
 
 	float prev_time = 0;
 	float pos = 0;
+
 	while(!glfwWindowShouldClose(window)) {
 		delta = glfwGetTime() - prev_time;
 		prev_time = glfwGetTime();
@@ -209,12 +219,30 @@ int main() {
 
 		Matrix_identity(transform);
 
-		Matrix_rotateX(transform, pos * PI);
-		Matrix_rotateY(transform, pos * PI);
-		Matrix_scale(transform, (Vec3) { pos, pos, pos });
-		Matrix_translate(transform, (Vec3) { pos*.5f, pos*.5f, pos*.25f });
+		Vec3 vec;
+
+		if(glfwGetKey(window, GLFW_KEY_W))
+			vec.z += delta / 4.f;
+			
+		if(glfwGetKey(window, GLFW_KEY_S))
+			vec.z -= delta / 4.f;
+
+		if(glfwGetKey(window, GLFW_KEY_A))
+			vec.x -= delta / 4.f;
+
+		if(glfwGetKey(window, GLFW_KEY_D))
+			vec.x += delta / 4.f;
+
+		Matrix_translate(view, vec);
+
+//		Matrix_rotateX(transform, pos * PI);
+//		Matrix_rotateY(transform, pos * PI);
+//		Matrix_scale(transform, (Vec3) { pos, pos, pos });
+//		Matrix_translate(transform, (Vec3) { pos*.5f, pos*.5f, pos*.25f });
 
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, transform);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, view);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, projection);
 
 		// rotate around x axis
 

@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <assert.h>
 #include <math.h>
+
 #include "../include/matrix.h"
 
 #define PI 3.14159
@@ -14,6 +16,8 @@ void Matrix_identity(Matrix mat) {
 	mat[10] = 1.f;
 	mat[15] = 1.f;
 }
+
+//------------------------------------------------------------------------
 
 void Matrix_multiply(Matrix a, Matrix b) {
 	Matrix res;
@@ -34,10 +38,32 @@ void Matrix_multiply(Matrix a, Matrix b) {
 		a[i] = res[i];
 }
 
+//------------------------------------------------------------------------
+
 void Matrix_print(Matrix mat) {
 	for(int i = 0; i < 4; i++)
 		printf("[ %.2f, %.2f, %.2f, %.2f ]\n", mat[i*4], mat[i*4 + 1], mat[i*4 + 2], mat[i*4 + 3]);
 }
+
+//------------------------------------------------------------------------
+
+void Matrix_projection(Matrix mat, float fov, float aspect_ratio, float near_distance, float far_distance) {
+	assert(fov > 0 && aspect_ratio != 0);
+
+	printf("aspect ratio: %f\n", aspect_ratio);
+	printf("fov: %f\n", fov);
+
+	for(int i = 0; i < 16; i++)
+		mat[i] = 0.f;
+
+	mat[0]   = 1.f / (aspect_ratio * tan(fov/2));
+	mat[5]   = 1.f / tan(fov/2);
+	mat[10] -= far_distance + near_distance / (far_distance - near_distance);
+	mat[11] -= 1.f;
+	mat[14] -= 2.f * far_distance * near_distance / (far_distance - near_distance);
+}
+
+//------------------------------------------------------------------------
 
 void Matrix_translate(Matrix mat, Vec3 translation) {
 	Matrix temp;
@@ -50,6 +76,8 @@ void Matrix_translate(Matrix mat, Vec3 translation) {
 	Matrix_multiply(mat, temp);
 }
 
+//------------------------------------------------------------------------
+
 void Matrix_scale(Matrix mat, Vec3 scale) {
 	Matrix temp;
 	Matrix_identity(temp);
@@ -61,6 +89,7 @@ void Matrix_scale(Matrix mat, Vec3 scale) {
 	Matrix_multiply(mat, temp);
 }
 
+//------------------------------------------------------------------------
 
 void Matrix_rotateX(Matrix mat, float angle) {
 	Matrix temp;
@@ -74,6 +103,8 @@ void Matrix_rotateX(Matrix mat, float angle) {
 	Matrix_multiply(mat, temp);
 }
 
+//------------------------------------------------------------------------
+
 void Matrix_rotateY(Matrix mat, float angle) {
 	Matrix temp;
 	Matrix_identity(temp);
@@ -85,6 +116,8 @@ void Matrix_rotateY(Matrix mat, float angle) {
 
 	Matrix_multiply(mat, temp);
 }
+
+//------------------------------------------------------------------------
 
 void Matrix_rotateZ(Matrix mat, float angle) {
 }
