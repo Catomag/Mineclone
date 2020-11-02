@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "../include/types.h"
+#include "../include/vector.h"
 #include "../include/matrix.h"
 
 
@@ -196,7 +197,7 @@ int main() {
 	Matrix_identity(transform);
 	Matrix_identity(view);
 	Matrix_identity(projection);
-	Matrix_projection(projection, PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
+	Matrix_perspective(projection, PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -209,36 +210,63 @@ int main() {
 	float prev_time = 0;
 	float pos = 0;
 
+	Vector3 cam_pos = {0};
+	Vector3 cam_front = {0};
+
+	Vector2 mouse_pos = {0};
+	Vector2 mouse_prev = {0};
+	Vector2 mouse_delta = {0};
+
 	while(!glfwWindowShouldClose(window)) {
 		delta = glfwGetTime() - prev_time;
 		prev_time = glfwGetTime();
+
+		double mouse_x, mouse_y;
+		glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+		mouse_pos.x = mouse_x;
+		mouse_pos.y = mouse_y;
+
+		mouse_delta.x = mouse_pos.x - mouse_prev.x;
+		mouse_delta.y = mouse_pos.y - mouse_prev.y;
+		mouse_prev = mouse_pos;
 
 		if(pos > 1.f || pos < -1.f)
 			angle *= -1.f;
 		pos += angle * delta * .5f;
 
-		Matrix_identity(transform);
-
-		Vec3 vec;
-
 		if(glfwGetKey(window, GLFW_KEY_W))
-			vec.z += delta / 4.f;
+			cam_pos.z -= delta * 4.f;
 			
 		if(glfwGetKey(window, GLFW_KEY_S))
-			vec.z -= delta / 4.f;
+			cam_pos.z += delta * 4.f;
 
 		if(glfwGetKey(window, GLFW_KEY_A))
-			vec.x -= delta / 4.f;
+			cam_pos.x -= delta * 4.f;
 
 		if(glfwGetKey(window, GLFW_KEY_D))
-			vec.x += delta / 4.f;
+			cam_pos.x += delta * 4.f;
 
-		Matrix_translate(view, vec);
+//		cam_front = cam_pos;
+//		cam_front.z -= 1;
+
+		cam_front = (Vector3) { 0, 0, 0.f };
+
+		cam_pos.x = sin(glfwGetTime() / 5.f) * 10.f;
+		cam_pos.y = 0;
+		cam_pos.z = cos(glfwGetTime() / 5.f) * 10.f;
+
+		printf("x: %f, z: %f\n", (cam_pos.x / 10.f) * (180.f / PI), (cam_pos.z / 10.f) * (180.f / PI));
+
+		Matrix_identity(transform);
+		Matrix_identity(view);
+
+		Matrix_look_at(view, cam_pos, (Vector3) { 0.f, 0.f, 0.f }, (Vector3) { 0.f, 1.f, 0.f });
 
 //		Matrix_rotateX(transform, pos * PI);
 //		Matrix_rotateY(transform, pos * PI);
-//		Matrix_scale(transform, (Vec3) { pos, pos, pos });
-//		Matrix_translate(transform, (Vec3) { pos*.5f, pos*.5f, pos*.25f });
+//		Matrix_scale(transform, (Vector3) { pos, pos, pos });
+//		Matrix_translate(transform, (Vector3) { pos*.5f, pos*.5f, pos*.25f });
 
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, transform);
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, view);
