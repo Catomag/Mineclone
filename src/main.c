@@ -2,15 +2,14 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define RAYMATH_IMPLEMENTATION
+#define RAYMATH_STANDALONE
+#include <raymath.h>
+
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #include "../include/types.h"
-#include "../include/vector.h"
-#include "../include/matrix.h"
-
-
-#define PI 3.14159
 
 #define debug_print(x) _debug_print(x, __LINE__, __FILE__);
 #define this_ran() _debug_print("This ran", __LINE__, __FILE__);
@@ -100,6 +99,12 @@ uint load_shader(const char* vertex_shader_file, const char* frag_shader_file) {
 }
 
 
+//------------------------------------------------------------------------
+
+
+void handle_input(GLFWwindow* window) {
+}
+
 
 //------------------------------------------------------------------------
 
@@ -187,18 +192,14 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	Matrix transform;
-	Matrix view;
-	Matrix projection;
 
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 
-	Matrix_identity(transform);
-	Matrix_identity(view);
-	Matrix_identity(projection);
-	Matrix_perspective(projection, PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
-
+	Matrix transform = MatrixIdentity();
+	Matrix view = MatrixIdentity();
+	Matrix projection = MatrixPerspective(PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
+	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glUseProgram(shader_program);
@@ -212,6 +213,7 @@ int main() {
 
 	Vector3 cam_pos = {0};
 	Vector3 cam_front = {0};
+	Vector3 cam_up = {0};
 
 	Vector2 mouse_pos = {0};
 	Vector2 mouse_prev = {0};
@@ -252,25 +254,11 @@ int main() {
 
 		cam_front = (Vector3) { 0, 0, 0.f };
 
-		cam_pos.x = sin(glfwGetTime() / 5.f) * 10.f;
-		cam_pos.y = 0;
-		cam_pos.z = cos(glfwGetTime() / 5.f) * 10.f;
+		view = MatrixLookAt(cam_pos, Vector3Add(cam_pos, cam_front), (Vector3) { 0.f, 1.f, 0.f });
 
-		printf("x: %f, z: %f\n", (cam_pos.x / 10.f) * (180.f / PI), (cam_pos.z / 10.f) * (180.f / PI));
-
-		Matrix_identity(transform);
-		Matrix_identity(view);
-
-		Matrix_look_at(view, cam_pos, (Vector3) { 0.f, 0.f, 0.f }, (Vector3) { 0.f, 1.f, 0.f });
-
-//		Matrix_rotateX(transform, pos * PI);
-//		Matrix_rotateY(transform, pos * PI);
-//		Matrix_scale(transform, (Vector3) { pos, pos, pos });
-//		Matrix_translate(transform, (Vector3) { pos*.5f, pos*.5f, pos*.25f });
-
-		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, transform);
-		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, view);
-		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, projection);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, MatrixToFloatV(view).v);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, MatrixToFloatV(projection).v);
 
 		// rotate around x axis
 
