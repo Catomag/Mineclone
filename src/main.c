@@ -115,7 +115,7 @@ int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	GLFWwindow* window = glfwCreateWindow(800, 800, "testapp", NULL, NULL);
 	if(window == NULL) {
@@ -132,66 +132,69 @@ int main() {
 
 	glViewport(0, 0, 800, 800);
 	glfwSetFramebufferSizeCallback(window, framebuffer_callback);
-
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	uint shader_program = load_shader("assets/vert.glsl", "assets/frag.glsl");
 	uint vao;
-	uint ebo;
 	uint vbo;
 
 	float verts[] = {
-		-0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 	
-	uint indices[] = {
-		// front
-		1, 2, 3,
-		0, 1, 3,
-
-		// left
-		1, 5, 2,
-		5, 6, 2,
-
-		// right
-		4, 0, 7,
-		0, 3, 7,
-
-		// back
-		5, 4, 6,
-		4, 7, 6,
-		
-		// top
-		4, 5, 0,
-		5, 1, 0,
-
-		// bottom
-		3, 2, 7,
-		2, 6, 7
-	};
-
 	glGenVertexArrays(1, &vao);
 
 	glBindVertexArray(vao);
-	glGenBuffers(1, &ebo);
 	glGenBuffers(1, &vbo);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
@@ -200,7 +203,8 @@ int main() {
 	Matrix view = MatrixIdentity();
 	Matrix projection = MatrixPerspective(PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
 	
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_DEPTH_TEST);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
@@ -214,6 +218,9 @@ int main() {
 	Vector3 cam_pos = {0};
 	Vector3 cam_front = {0};
 	Vector3 cam_up = {0};
+	Vector3 cam_dir = {0};
+	float pitch = 0;
+	float yaw = - PI / 2;
 
 	Vector2 mouse_pos = {0};
 	Vector2 mouse_prev = {0};
@@ -233,26 +240,37 @@ int main() {
 		mouse_delta.y = mouse_pos.y - mouse_prev.y;
 		mouse_prev = mouse_pos;
 
+		pitch -= mouse_delta.y * delta * 0.05f;
+		yaw += mouse_delta.x * delta * 0.05f;
+
+		if(pitch > (89.0f * PI / 180.f))
+			pitch = (89.0f * PI / 180.f);
+
+		if(pitch < -(89.0f * PI / 180.f))
+			pitch = -(89.0f * PI / 180.f);
+
 		if(pos > 1.f || pos < -1.f)
 			angle *= -1.f;
+
 		pos += angle * delta * .5f;
 
 		if(glfwGetKey(window, GLFW_KEY_W))
-			cam_pos.z -= delta * 4.f;
+			cam_pos = Vector3Add(cam_pos, Vector3Scale(cam_front, delta * 4.f));
 			
 		if(glfwGetKey(window, GLFW_KEY_S))
-			cam_pos.z += delta * 4.f;
+			cam_pos = Vector3Subtract(cam_pos, Vector3Scale(cam_front, delta * 4.f));
 
 		if(glfwGetKey(window, GLFW_KEY_A))
-			cam_pos.x -= delta * 4.f;
+			cam_pos = Vector3Subtract(cam_pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam_front, cam_up)), delta * 4.f));
 
 		if(glfwGetKey(window, GLFW_KEY_D))
-			cam_pos.x += delta * 4.f;
+			cam_pos = Vector3Add(cam_pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam_front, cam_up)), delta * 4.f));
 
-//		cam_front = cam_pos;
-//		cam_front.z -= 1;
-
-		cam_front = (Vector3) { 0, 0, 0.f };
+		cam_dir.x = cos(yaw) * cos(pitch);
+		cam_dir.y = sin(pitch);
+		cam_dir.z = sin(yaw) * cos(pitch);
+		cam_front = Vector3Normalize(cam_dir);
+		cam_up = (Vector3) { 0, 1, 0 };
 
 		view = MatrixLookAt(cam_pos, Vector3Add(cam_pos, cam_front), (Vector3) { 0.f, 1.f, 0.f });
 
@@ -260,18 +278,12 @@ int main() {
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, MatrixToFloatV(view).v);
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, MatrixToFloatV(projection).v);
 
-		// rotate around x axis
-
-		// rotate around y axis
-
-		// rotate around z axis
-
 		glfwSwapBuffers(window);
 		glClearColor(0, 0, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwPollEvents();
 	}
