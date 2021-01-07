@@ -12,7 +12,7 @@
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
-#include "../include/types.h"
+#include "../include/types.h" 
 #include "../include/camera.h"
 #include "../include/chunk.h"
 
@@ -261,6 +261,7 @@ int main() {
 	Vector2 mouse_delta = { 0 };
 
 	Chunks_init();
+	Chunk_generateMesh(0);
 
 	while(!glfwWindowShouldClose(window)) {
 		delta = glfwGetTime() - prev_time;
