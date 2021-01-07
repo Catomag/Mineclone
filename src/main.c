@@ -6,13 +6,24 @@
 #define RAYMATH_STANDALONE
 #include <raymath.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../include/stb_image.h"
+
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #include "../include/types.h"
+#include "../include/camera.h"
+#include "../include/chunk.h"
 
 #define debug_print(x) _debug_print(x, __LINE__, __FILE__);
 #define this_ran() _debug_print("This ran", __LINE__, __FILE__);
+
+
+//------------------------------------------------------------------------
+
+
+Camera cam;
 
 
 //------------------------------------------------------------------------
@@ -23,6 +34,7 @@ void _debug_print(const char* message, uint line, const char* filename) {
 
 void framebuffer_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+	Camera_set(&cam, PI / 4.f, width, height, 0.0001f, 1000.f);
 }
 
 //------------------------------------------------------------------------
@@ -96,6 +108,33 @@ uint load_shader(const char* vertex_shader_file, const char* frag_shader_file) {
 	glDeleteShader(vertex_shader);
 	glDeleteShader(frag_shader);
 	return program;
+}
+
+
+uint load_texture(const char* filename) {
+	stbi_set_flip_vertically_on_load(1);
+	int width, height, comp;
+	byte* data = stbi_load(filename, &width, &height, &comp, 0);
+
+	if(!data) {
+		printf("oh shit, texture not here boyo!\n");
+	}
+	printf("width: %i, %i\n", width, height);
+
+	uint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(data);
+	return texture;
 }
 
 
@@ -199,9 +238,9 @@ int main() {
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 
-	Matrix transform = MatrixIdentity();
-	Matrix view = MatrixIdentity();
-	Matrix projection = MatrixPerspective(PI / 4.f, ((float) width / (float) height), .001f, 1000.f);
+	Matrix transform;
+	transform = MatrixIdentity();
+	cam = Camera_create(PI / 4.f, width, height, 0.001f, 1000.f);
 	
 	glEnable(GL_DEPTH_TEST);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -209,22 +248,19 @@ int main() {
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
+	uint texture = load_texture("assets/rock.png");
+
 	float angle = -1.f;
 	float delta = 0;
 
 	float prev_time = 0;
 	float pos = 0;
 
-	Vector3 cam_pos = {0};
-	Vector3 cam_front = {0};
-	Vector3 cam_up = {0};
-	Vector3 cam_dir = {0};
-	float pitch = 0;
-	float yaw = - PI / 2;
+	Vector2 mouse_pos   = { 0 };
+	Vector2 mouse_prev  = { 0 };
+	Vector2 mouse_delta = { 0 };
 
-	Vector2 mouse_pos = {0};
-	Vector2 mouse_prev = {0};
-	Vector2 mouse_delta = {0};
+	Chunks_init();
 
 	while(!glfwWindowShouldClose(window)) {
 		delta = glfwGetTime() - prev_time;
@@ -240,54 +276,54 @@ int main() {
 		mouse_delta.y = mouse_pos.y - mouse_prev.y;
 		mouse_prev = mouse_pos;
 
-		pitch -= mouse_delta.y * delta * 0.05f;
-		yaw += mouse_delta.x * delta * 0.05f;
-
-		if(pitch > (89.0f * PI / 180.f))
-			pitch = (89.0f * PI / 180.f);
-
-		if(pitch < -(89.0f * PI / 180.f))
-			pitch = -(89.0f * PI / 180.f);
+		cam.pitch -= mouse_delta.y * delta * 0.05f;
+		cam.yaw += mouse_delta.x * delta * 0.05f;
 
 		if(pos > 1.f || pos < -1.f)
 			angle *= -1.f;
 
 		pos += angle * delta * .5f;
 
+		if(glfwGetKey(window, GLFW_KEY_LEFT_SUPER))
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		else
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 		if(glfwGetKey(window, GLFW_KEY_W))
-			cam_pos = Vector3Add(cam_pos, Vector3Scale(cam_front, delta * 4.f));
+			cam.pos = Vector3Add(cam.pos, Vector3Scale(cam.front, delta * 4.f));
 			
 		if(glfwGetKey(window, GLFW_KEY_S))
-			cam_pos = Vector3Subtract(cam_pos, Vector3Scale(cam_front, delta * 4.f));
+			cam.pos = Vector3Subtract(cam.pos, Vector3Scale(cam.front, delta * 4.f));
 
 		if(glfwGetKey(window, GLFW_KEY_A))
-			cam_pos = Vector3Subtract(cam_pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam_front, cam_up)), delta * 4.f));
+			cam.pos = Vector3Subtract(cam.pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam.front, (Vector3) { 0, 1, 0 })), delta * 4.f));
 
 		if(glfwGetKey(window, GLFW_KEY_D))
-			cam_pos = Vector3Add(cam_pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam_front, cam_up)), delta * 4.f));
+			cam.pos = Vector3Add(cam.pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam.front, (Vector3) { 0, 1, 0 })), delta * 4.f));
 
-		cam_dir.x = cos(yaw) * cos(pitch);
-		cam_dir.y = sin(pitch);
-		cam_dir.z = sin(yaw) * cos(pitch);
-		cam_front = Vector3Normalize(cam_dir);
-		cam_up = (Vector3) { 0, 1, 0 };
+		Camera_update(&cam, (Vector3) { 0, 1, 0 });
 
-		view = MatrixLookAt(cam_pos, Vector3Add(cam_pos, cam_front), (Vector3) { 0.f, 1.f, 0.f });
-
+		transform = MatrixIdentity();
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
-		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, MatrixToFloatV(view).v);
-		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, MatrixToFloatV(projection).v);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, MatrixToFloatV(cam.view).v);
+		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, MatrixToFloatV(cam.projection).v);
+
 
 		glfwSwapBuffers(window);
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glBindVertexArray(vao);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		Chunks_draw();
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwPollEvents();
 	}
 
 	glfwTerminate();
+	glDeleteBuffers(1, &vao);
+	glDeleteBuffers(1, &vbo);
+	glDeleteTextures(1, &texture);
 	return 0;
 }
