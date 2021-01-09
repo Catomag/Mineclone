@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "../include/glad/glad.h"
@@ -55,41 +56,58 @@ void Chunks_init() {
 		0.f, 1.f,
 		0.f, 0.f
 	};
+
+	g_chunk_meshes = (Mesh*) malloc(sizeof(Mesh));
+	g_chunks = (Chunk*) malloc(sizeof(Chunk));
+	for(unsigned int i = 0; i < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT; i++) {
+		g_chunks[0].data[i] = 0;
+	}
+	for(unsigned int i = 1; i < (CHUNK_LENGTH-1) * (CHUNK_LENGTH-1) * (CHUNK_HEIGHT-1); i++) {
+		g_chunks[0].data[i] = 1;
+	}
+
+//	g_chunks[0].data[1000] = 1;
 }
 
 void Chunk_generateMesh(uint chunk_id) {
 
 	unsigned int quad_count = 0;
 	for(short x = 0; x < CHUNK_LENGTH; x++) {
-		for(short y = 0; y < CHUNK_LENGTH; y++) {
-			for(short z = 0; z < CHUNK_HEIGHT; z++) {
-				unsigned int i = (z * CHUNK_HEIGHT + y) * CHUNK_LENGTH + x;
+		for(short y = 0; y < CHUNK_HEIGHT; y++) {
+			for(short z = 0; z < CHUNK_LENGTH; z++) {
+				unsigned int i = (y * CHUNK_HEIGHT + z) * CHUNK_LENGTH + x;
 				if(g_chunks[chunk_id].data[i] != 0) {
 					unsigned int j = 0;
 
 					// add mesh right
-					j = (z * CHUNK_HEIGHT + y) * CHUNK_LENGTH + (x + 1);
-					quad_count += (g_chunks[chunk_id].data[j] != 0);
+					j = (y * CHUNK_HEIGHT + z) * CHUNK_LENGTH + (x + 1);
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT)
+						quad_count += (g_chunks[chunk_id].data[j] == 0);
 
 					// add mesh left
-					j = (z * CHUNK_HEIGHT + y) * CHUNK_LENGTH + (x - 1);
-					quad_count += (g_chunks[chunk_id].data[j] != 0);
+					j = (y * CHUNK_HEIGHT + z) * CHUNK_LENGTH + (x - 1);
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT)
+						quad_count += (g_chunks[chunk_id].data[j] == 0);
 
 					// add mesh left
-					j = (z * CHUNK_HEIGHT + (y + 1)) * CHUNK_LENGTH + x;
-					quad_count += (g_chunks[chunk_id].data[j] != 0);
+					j = (y * CHUNK_HEIGHT + (z + 1)) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT)
+						quad_count += (g_chunks[chunk_id].data[j] == 0);
 
 					// add mesh left
-					j = (z * CHUNK_HEIGHT + (y - 1)) * CHUNK_LENGTH + x;
-					quad_count += (g_chunks[chunk_id].data[j] != 0);
+					j = (y * CHUNK_HEIGHT + (z - 1)) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT)
+						quad_count += (g_chunks[chunk_id].data[j] == 0);
 
 					// add mesh left
-					j = ((z + 1) * CHUNK_HEIGHT + y) * CHUNK_LENGTH + x;
-					quad_count += (g_chunks[chunk_id].data[j] != 0);
+					j = ((y + 1) * CHUNK_HEIGHT + z) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT)
+						quad_count += (g_chunks[chunk_id].data[j] == 0);
 
 					// add mesh left
-					j = ((z - 1) * CHUNK_HEIGHT + y) * CHUNK_LENGTH + x;
-					quad_count += (g_chunks[chunk_id].data[j] != 0);
+					j = ((y - 1) * CHUNK_HEIGHT + z) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT)
+						quad_count += (g_chunks[chunk_id].data[j] == 0);
 				}
 			}
 		}
@@ -109,15 +127,15 @@ void Chunk_generateMesh(uint chunk_id) {
 					unsigned int j = 0;
 
 					// add mesh right
-					j = (z * CHUNK_HEIGHT + y) * CHUNK_LENGTH + (x + 1);
-					if(j < 0 || j > CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
-						if(g_chunks[chunk_id].data[j] != 0) {
-							verts[vert_count] 	  = (Vector3) { x + 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 1] = (Vector3) { x + 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 2] = (Vector3) { x + 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 3] = (Vector3) { x + 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 4] = (Vector3) { x + 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 5] = (Vector3) { x + 1.f, y + 1.f, z + 1.f };
+					j = (y * CHUNK_HEIGHT + z) * CHUNK_LENGTH + (x + 1);
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
+						if(g_chunks[chunk_id].data[j] == 0) {
+							verts[vert_count] 	  = (Vector3) { x + .5f, y + .5f, z + .5f };
+							verts[vert_count + 1] = (Vector3) { x + .5f, y + .5f, z - .5f };
+							verts[vert_count + 2] = (Vector3) { x + .5f, y - .5f, z - .5f };
+							verts[vert_count + 3] = (Vector3) { x + .5f, y - .5f, z - .5f };
+							verts[vert_count + 4] = (Vector3) { x + .5f, y - .5f, z + .5f };
+							verts[vert_count + 5] = (Vector3) { x + .5f, y + .5f, z + .5f };
 
 							uvs[vert_count]  	= (Vector2) { 1.f, 0.f };
 							uvs[vert_count + 1] = (Vector2) { 1.f, 1.f };
@@ -130,15 +148,15 @@ void Chunk_generateMesh(uint chunk_id) {
 					}
 
 					// add mesh left
-					j = (z * CHUNK_HEIGHT + y) * CHUNK_LENGTH + (x - 1);
-					if(j < 0 || j > CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
-						if(g_chunks[chunk_id].data[j] != 0) {
-							verts[vert_count] 	  = (Vector3) { x - 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 1] = (Vector3) { x - 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 2] = (Vector3) { x - 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 3] = (Vector3) { x - 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 4] = (Vector3) { x - 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 5] = (Vector3) { x - 1.f, y + 1.f, z + 1.f };
+					j = (y * CHUNK_HEIGHT + z) * CHUNK_LENGTH + (x - 1);
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
+						if(g_chunks[chunk_id].data[j] == 0) {
+							verts[vert_count] 	  = (Vector3) { x - .5f, y + .5f, z + .5f };
+							verts[vert_count + 1] = (Vector3) { x - .5f, y + .5f, z - .5f };
+							verts[vert_count + 2] = (Vector3) { x - .5f, y - .5f, z - .5f };
+							verts[vert_count + 3] = (Vector3) { x - .5f, y - .5f, z - .5f };
+							verts[vert_count + 4] = (Vector3) { x - .5f, y - .5f, z + .5f };
+							verts[vert_count + 5] = (Vector3) { x - .5f, y + .5f, z + .5f };
 
 							uvs[vert_count]  	= (Vector2) { 1.f, 0.f };
 							uvs[vert_count + 1] = (Vector2) { 1.f, 1.f };
@@ -151,15 +169,15 @@ void Chunk_generateMesh(uint chunk_id) {
 					}
 
 					// add mesh up
-					j = (z * CHUNK_HEIGHT + (y + 1)) * CHUNK_LENGTH + x;
-					if(j < 0 || j > CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
-						if(g_chunks[chunk_id].data[j] != 0) {
-							verts[vert_count] 	  = (Vector3) { x - 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 1] = (Vector3) { x + 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 2] = (Vector3) { x + 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 3] = (Vector3) { x + 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 4] = (Vector3) { x - 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 5] = (Vector3) { x - 1.f, y + 1.f, z - 1.f };
+					j = (y * CHUNK_HEIGHT + (z + 1)) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
+						if(g_chunks[chunk_id].data[j] == 0) {
+							verts[vert_count] 	  = (Vector3) { x - .5f, y + .5f, z - .5f };
+							verts[vert_count + 1] = (Vector3) { x + .5f, y + .5f, z - .5f };
+							verts[vert_count + 2] = (Vector3) { x + .5f, y + .5f, z + .5f };
+							verts[vert_count + 3] = (Vector3) { x + .5f, y + .5f, z + .5f };
+							verts[vert_count + 4] = (Vector3) { x - .5f, y + .5f, z + .5f };
+							verts[vert_count + 5] = (Vector3) { x - .5f, y + .5f, z - .5f };
 
 							uvs[vert_count]  	= (Vector2) { 0.f, 0.f };
 							uvs[vert_count + 1] = (Vector2) { 1.f, 0.f };
@@ -172,15 +190,15 @@ void Chunk_generateMesh(uint chunk_id) {
 					}
 
 					// add mesh down
-					j = (z * CHUNK_HEIGHT + (y - 1)) * CHUNK_LENGTH + x;
-					if(j < 0 || j > CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
-						if(g_chunks[chunk_id].data[j] != 0) {
-							verts[vert_count] 	  = (Vector3) { x - 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 1] = (Vector3) { x + 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 2] = (Vector3) { x + 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 3] = (Vector3) { x + 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 4] = (Vector3) { x - 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 5] = (Vector3) { x - 1.f, y - 1.f, z - 1.f };
+					j = (y * CHUNK_HEIGHT + (z - 1)) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
+						if(g_chunks[chunk_id].data[j] == 0) {
+							verts[vert_count] 	  = (Vector3) { x - .5f, y - .5f, z - .5f };
+							verts[vert_count + 1] = (Vector3) { x + .5f, y - .5f, z - .5f };
+							verts[vert_count + 2] = (Vector3) { x + .5f, y - .5f, z + .5f };
+							verts[vert_count + 3] = (Vector3) { x + .5f, y - .5f, z + .5f };
+							verts[vert_count + 4] = (Vector3) { x - .5f, y - .5f, z + .5f };
+							verts[vert_count + 5] = (Vector3) { x - .5f, y - .5f, z - .5f };
 
 							uvs[vert_count]  	= (Vector2) { 0.f, 0.f };
 							uvs[vert_count + 1] = (Vector2) { 1.f, 0.f };
@@ -193,15 +211,15 @@ void Chunk_generateMesh(uint chunk_id) {
 					}
 
 					// add mesh front
-					j = ((z + 1) * CHUNK_HEIGHT + y) * CHUNK_LENGTH + x;
-					if(j < 0 || j > CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
-						if(g_chunks[chunk_id].data[j] != 0) {
-							verts[vert_count] 	  = (Vector3) { x - 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 1] = (Vector3) { x + 1.f, y - 1.f, z + 1.f };
-							verts[vert_count + 2] = (Vector3) { x + 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 3] = (Vector3) { x + 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 4] = (Vector3) { x - 1.f, y + 1.f, z + 1.f };
-							verts[vert_count + 5] = (Vector3) { x - 1.f, y - 1.f, z + 1.f };
+					j = ((y + 1) * CHUNK_HEIGHT + z) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
+						if(g_chunks[chunk_id].data[j] == 0) {
+							verts[vert_count] 	  = (Vector3) { x - .5f, y - .5f, z + .5f };
+							verts[vert_count + 1] = (Vector3) { x + .5f, y - .5f, z + .5f };
+							verts[vert_count + 2] = (Vector3) { x + .5f, y + .5f, z + .5f };
+							verts[vert_count + 3] = (Vector3) { x + .5f, y + .5f, z + .5f };
+							verts[vert_count + 4] = (Vector3) { x - .5f, y + .5f, z + .5f };
+							verts[vert_count + 5] = (Vector3) { x - .5f, y - .5f, z + .5f };
 
 							uvs[vert_count]  	= (Vector2) { 0.f, 0.f };
 							uvs[vert_count + 1] = (Vector2) { 1.f, 0.f };
@@ -214,15 +232,15 @@ void Chunk_generateMesh(uint chunk_id) {
 					}
 
 					// add mesh back
-					j = ((z - 1) * CHUNK_HEIGHT + y) * CHUNK_LENGTH + x;
-					if(j < 0 || j > CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
-						if(g_chunks[chunk_id].data[j] != 0) {
-							verts[vert_count] 	  = (Vector3) { x - 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 1] = (Vector3) { x + 1.f, y - 1.f, z - 1.f };
-							verts[vert_count + 2] = (Vector3) { x + 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 3] = (Vector3) { x + 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 4] = (Vector3) { x - 1.f, y + 1.f, z - 1.f };
-							verts[vert_count + 5] = (Vector3) { x - 1.f, y - 1.f, z - 1.f };
+					j = ((y - 1) * CHUNK_HEIGHT + z) * CHUNK_LENGTH + x;
+					if(j >= 0 && j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT) {
+						if(g_chunks[chunk_id].data[j] == 0) {
+							verts[vert_count] 	  = (Vector3) { x - .5f, y - .5f, z - .5f };
+							verts[vert_count + 1] = (Vector3) { x + .5f, y - .5f, z - .5f };
+							verts[vert_count + 2] = (Vector3) { x + .5f, y + .5f, z - .5f };
+							verts[vert_count + 3] = (Vector3) { x + .5f, y + .5f, z - .5f };
+							verts[vert_count + 4] = (Vector3) { x - .5f, y + .5f, z - .5f };
+							verts[vert_count + 5] = (Vector3) { x - .5f, y - .5f, z - .5f };
 
 							uvs[vert_count]  	= (Vector2) { 0.f, 0.f };
 							uvs[vert_count + 1] = (Vector2) { 1.f, 0.f };
@@ -238,6 +256,9 @@ void Chunk_generateMesh(uint chunk_id) {
 		}
 	}
 
+
+	printf("Quad count: %i\n", quad_count);
+	printf("Vertex count: %i\n", vert_count);
 	// put them in the memories
 	g_chunk_meshes[chunk_id] = Mesh_create(verts, uvs, vert_count);
 }
