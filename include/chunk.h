@@ -5,7 +5,7 @@
 #include "types.h"
 
 #define CHUNK_LENGTH 16
-#define CHUNK_HEIGHT 16
+#define CHUNK_HEIGHT 32
 
 // blocks are stored as ids that can be referenced later on
 typedef byte block_id;

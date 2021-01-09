@@ -178,47 +178,47 @@ int main() {
 	uint vbo;
 
 	float verts[] = {
-		 0.f,  0.f,  0.f,  0.0f, 0.0f,
-		  8f,  0.f,  0.f,  1.0f, 0.0f,
-		  8f,   8f,  0.f,  1.0f, 1.0f,
-		  8f,   8f,  0.f,  1.0f, 1.0f,
-		 0.f,   8f,  0.f,  0.0f, 1.0f,
-		 0.f,  0.f,  0.f,  0.0f, 0.0f,
+		 0.f,  0.f, 0.f,  0.0f, 0.0f,
+		 8.f,  0.f, 0.f,  1.0f, 0.0f,
+		 8.f, 16.f, 0.f,  1.0f, 1.0f,
+		 8.f, 16.f, 0.f,  1.0f, 1.0f,
+		 0.f, 16.f, 0.f,  0.0f, 1.0f,
+		 0.f,  0.f, 0.f,  0.0f, 0.0f,
 
-		 0.f,  0.f,   8f,  0.0f, 0.0f,
-		  8f,  0.f,   8f,  1.0f, 0.0f,
-		  8f,   8f,   8f,  1.0f, 1.0f,
-		  8f,   8f,   8f,  1.0f, 1.0f,
-		 0.f,   8f,   8f,  0.0f, 1.0f,
-		 0.f,  0.f,   8f,  0.0f, 0.0f,
+		 0.f,  0.f, 8.f,  0.0f, 0.0f,
+		 8.f,  0.f, 8.f,  1.0f, 0.0f,
+		 8.f, 16.f, 8.f,  1.0f, 1.0f,
+		 8.f, 16.f, 8.f,  1.0f, 1.0f,
+		 0.f, 16.f, 8.f,  0.0f, 1.0f,
+		 0.f,  0.f, 8.f,  0.0f, 0.0f,
 
-		 0.f,  8f,   8f,  1.0f, 0.0f,
-		 0.f,  8f,  0.f,  1.0f, 1.0f,
-		 0.f, 0.f,  0.f,  0.0f, 1.0f,
-		 0.f, 0.f,  0.f,  0.0f, 1.0f,
-		 0.f, 0.f,   8f,  0.0f, 0.0f,
-		 0.f,  8f,   8f,  1.0f, 0.0f,
+		 0.f, 16.f, 8.f,  1.0f, 0.0f,
+		 0.f, 16.f, 0.f,  1.0f, 1.0f,
+		 0.f,  0.f, 0.f,  0.0f, 1.0f,
+		 0.f,  0.f, 0.f,  0.0f, 1.0f,
+		 0.f,  0.f, 8.f,  0.0f, 0.0f,
+		 0.f, 16.f, 8.f,  1.0f, 0.0f,
 
-		  8f,  8f,   8f,  1.0f, 0.0f,
-		  8f,  8f,  0.f,  1.0f, 1.0f,
-		  8f, 0.f,  0.f,  0.0f, 1.0f,
-		  8f, 0.f,  0.f,  0.0f, 1.0f,
-		  8f, 0.f,   8f,  0.0f, 0.0f,
-		  8f,  8f,   8f,  1.0f, 0.0f,
+		 8.f, 16.f, 8.f,  1.0f, 0.0f,
+		 8.f, 16.f, 0.f,  1.0f, 1.0f,
+		 8.f,  0.f, 0.f,  0.0f, 1.0f,
+		 8.f,  0.f, 0.f,  0.0f, 1.0f,
+		 8.f,  0.f, 8.f,  0.0f, 0.0f,
+		 8.f, 16.f, 8.f,  1.0f, 0.0f,
 
-		 0.f, 0.f,  0.f,  0.0f, 1.0f,
-		  8f, 0.f,  0.f,  1.0f, 1.0f,
-		  8f, 0.f,   8f,  1.0f, 0.0f,
-		  8f, 0.f,   8f,  1.0f, 0.0f,
-		 0.f, 0.f,   8f,  0.0f, 0.0f,
-		 0.f, 0.f,  0.f,  0.0f, 1.0f,
+		 0.f,  0.f, 0.f,  0.0f, 1.0f,
+		 8.f,  0.f, 0.f,  1.0f, 1.0f,
+		 8.f,  0.f, 8.f,  1.0f, 0.0f,
+		 8.f,  0.f, 8.f,  1.0f, 0.0f,
+		 0.f,  0.f, 8.f,  0.0f, 0.0f,
+		 0.f,  0.f, 0.f,  0.0f, 1.0f,
 
-		 0.f, 16.f,  0.f,  0.0f, 1.0f,
-		  8f, 16.f,  0.f,  1.0f, 1.0f,
-		  8f, 16.f,   8f,  1.0f, 0.0f,
-		  8f, 16.f,   8f,  1.0f, 0.0f,
-		 0.f, 16.f,   8f,  0.0f, 0.0f,
-		 0.f, 16.f,  0.f,  0.0f, 1.0f
+		 0.f, 16.f, 0.f,  0.0f, 1.0f,
+		 8.f, 16.f, 0.f,  1.0f, 1.0f,
+		 8.f, 16.f, 8.f,  1.0f, 0.0f,
+		 8.f, 16.f, 8.f,  1.0f, 0.0f,
+		 0.f, 16.f, 8.f,  0.0f, 0.0f,
+		 0.f, 16.f, 0.f,  0.0f, 1.0f
 	};
 	
 	glGenVertexArrays(1, &vao);
@@ -240,7 +240,7 @@ int main() {
 
 	Matrix transform;
 	transform = MatrixIdentity();
-	cam = Camera_create(PI / 4.f, width, height, 0.001f, 1000.f);
+	cam = Camera_create(PI / 2.f, width, height, 0.001f, 1000.f);
 	
 	glEnable(GL_DEPTH_TEST);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -248,7 +248,7 @@ int main() {
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
-	uint texture = load_texture("assets/rock.png");
+	uint texture = load_texture("assets/thing.png");
 
 	float angle = -1.f;
 	float delta = 0;
@@ -318,7 +318,7 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture);
 		Chunks_draw();
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwPollEvents();
 	}
