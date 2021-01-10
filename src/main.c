@@ -34,111 +34,9 @@ void _debug_print(const char* message, uint line, const char* filename) {
 
 void framebuffer_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
-	Camera_set(&cam, PI / 4.f, width, height, 0.0001f, 1000.f);
+	Camera_set(&cam, PI / 2.f, width, height, 0.0001f, 3000.f);
 }
 
-//------------------------------------------------------------------------
-
-
-Buffer load_file(const char* filename) {
-	Buffer buf;
-
-	FILE* file = fopen(filename, "r");
-	fseek(file, 0L, SEEK_END);
-	buf.size = ftell(file);
-	rewind(file);
-
-	buf.data = (byte*) malloc(sizeof(byte) * (buf.size + 1));
-	fread(buf.data, sizeof(byte), buf.size, file);
-	buf.data[buf.size] = '\0';
-	buf.size += 1;
-
-	fclose(file);
-	
-	return buf;
-}
-
-uint load_shader(const char* vertex_shader_file, const char* frag_shader_file) {
-	Buffer buf = load_file(frag_shader_file);
-
-	uint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(frag_shader, 1, (const GLchar *const *) &buf.data, NULL);
-	glCompileShader(frag_shader);
-
-	int success = 0;
-	char info_log[512];
-	glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &success);
-	if(!success) {
-		glGetShaderInfoLog(frag_shader, 512, NULL, info_log);
-		printf("Failed to compile frag shader: \"%s\"\n", info_log);
-		exit(-1);
-	}
-
-	buf.size = 0;
-	free(buf.data);
-
-	buf = load_file(vertex_shader_file);
-
-	uint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, (const GLchar *const *) &buf.data, NULL);
-	glCompileShader(vertex_shader);
-
-	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-	if(!success) {
-		glad_glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-		printf("Failed to compile vertex shader: \"%s\"\n", info_log);
-		exit(-1);
-	}
-
-	buf.size = 0;
-	free(buf.data);
-
-	uint program = glCreateProgram();
-	glAttachShader(program, vertex_shader);
-	glAttachShader(program, frag_shader);
-	glLinkProgram(program);
-	
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
-	if(!success) {
-		glGetProgramInfoLog(program, 512, NULL, info_log);
-		printf("Failed linking shader program: \"%s\"\n", info_log);
-		exit(-1);
-	}
-	
-	glDeleteShader(vertex_shader);
-	glDeleteShader(frag_shader);
-	return program;
-}
-
-
-uint load_texture(const char* filename) {
-	stbi_set_flip_vertically_on_load(1);
-	int width, height, comp;
-	byte* data = stbi_load(filename, &width, &height, &comp, 0);
-
-	if(!data) {
-		printf("oh shit, texture not here boyo!\n");
-	}
-	printf("width: %i, %i\n", width, height);
-
-	uint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(data);
-	return texture;
-}
-
-
-//------------------------------------------------------------------------
 
 
 void handle_input(GLFWwindow* window) {
@@ -148,6 +46,8 @@ void handle_input(GLFWwindow* window) {
 //------------------------------------------------------------------------
 
 
+int test_amount = 0;
+float test_last = 0.f;
 int main() {
 	// Window setup
 
@@ -240,7 +140,8 @@ int main() {
 
 	Matrix transform;
 	transform = MatrixIdentity();
-	cam = Camera_create(PI / 2.f, width, height, 0.001f, 1000.f);
+	cam = Camera_create(PI / 2.f, width, height, 0.001f, 3000.f);
+	cam.pos = (Vector3) { CHUNKS_RADIUS / 2.f * CHUNK_LENGTH, 10.f, CHUNKS_RADIUS / 2.f * CHUNK_LENGTH };
 	
 	glEnable(GL_DEPTH_TEST);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -248,7 +149,7 @@ int main() {
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
-	uint texture = load_texture("assets/thing.png");
+	uint texture = load_texture("assets/rock.png");
 
 	float angle = -1.f;
 	float delta = 0;
@@ -261,7 +162,6 @@ int main() {
 	Vector2 mouse_delta = { 0 };
 
 	Chunks_init();
-	Chunk_generateMesh(0);
 
 	while(!glfwWindowShouldClose(window)) {
 		delta = glfwGetTime() - prev_time;
@@ -290,25 +190,41 @@ int main() {
 		else
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+		if(glfwGetKey(window, GLFW_KEY_Z) && glfwGetTime() > test_last + .02f) {
+			printf("this ran\n");
+			test_amount += 5;
+			Chunk_test(test_amount);
+			test_last = glfwGetTime();
+		}
+		else if(glfwGetKey(window, GLFW_KEY_X) && glfwGetTime() > test_last + .02f) {
+			test_amount = (test_amount - 5 >= 0) * (test_amount - 5);
+			Chunk_test(test_amount);
+			test_last = glfwGetTime();
+		}
+
+		float move_speed = 1.f;
+		if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT))
+			move_speed = 2.f;
+
 		if(glfwGetKey(window, GLFW_KEY_W))
-			cam.pos = Vector3Add(cam.pos, Vector3Scale(cam.front, delta * 4.f));
+			cam.pos = Vector3Add(cam.pos, Vector3Scale(cam.front, delta * 6.f * move_speed));
 			
 		if(glfwGetKey(window, GLFW_KEY_S))
-			cam.pos = Vector3Subtract(cam.pos, Vector3Scale(cam.front, delta * 4.f));
+			cam.pos = Vector3Subtract(cam.pos, Vector3Scale(cam.front, delta * 6.f * move_speed));
 
 		if(glfwGetKey(window, GLFW_KEY_A))
-			cam.pos = Vector3Subtract(cam.pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam.front, (Vector3) { 0, 1, 0 })), delta * 4.f));
+			cam.pos = Vector3Subtract(cam.pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam.front, (Vector3) { 0, 1, 0 })), delta * 6.f * move_speed));
 
 		if(glfwGetKey(window, GLFW_KEY_D))
-			cam.pos = Vector3Add(cam.pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam.front, (Vector3) { 0, 1, 0 })), delta * 4.f));
-
+			cam.pos = Vector3Add(cam.pos, Vector3Scale(Vector3Normalize(Vector3CrossProduct(cam.front, (Vector3) { 0, 1, 0 })), delta * 6.f * move_speed));
+ 
 		Camera_update(&cam, (Vector3) { 0, 1, 0 });
 
 		transform = MatrixIdentity();
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, MatrixToFloatV(cam.view).v);
 		glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, MatrixToFloatV(cam.projection).v);
-
+		glUniform3f(glGetUniformLocation(shader_program, "cam_pos"), cam.pos.x, cam.pos.y, cam.pos.z);
 
 		glfwSwapBuffers(window);
 		glClearColor(0, 0, 0, 1);
@@ -316,7 +232,7 @@ int main() {
 
 		//glBindVertexArray(vao);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		Chunks_draw();
+		Chunks_draw(shader_program);
 		glBindVertexArray(vao);
 		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
