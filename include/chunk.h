@@ -6,7 +6,7 @@
 
 #define CHUNK_LENGTH 8 
 #define CHUNK_HEIGHT 32
-#define CHUNKS_RADIUS 40
+#define CHUNKS_RADIUS 2
 
 // blocks are stored as ids that can be referenced later on
 typedef byte block_id;

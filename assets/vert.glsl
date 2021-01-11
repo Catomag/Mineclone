@@ -26,7 +26,6 @@ void main() {
 
 	test = positive;
 
-	pos.y -= positive * ((dist * dist) / 50.f) + off;
-	pos.xz *= positive;
+	pos.y -= positive * ((dist * dist) / 500.f) + off;
 	gl_Position = projection * view * pos;
 }
