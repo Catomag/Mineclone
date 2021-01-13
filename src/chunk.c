@@ -4,6 +4,7 @@
 #include "../include/glad/glad.h"
 #include "../include/chunks_internal.h"
 #include "../include/util.h"
+#include "../include/debug.h"
 
 
 Chunk* chunks;
@@ -30,13 +31,13 @@ void Chunks_init() {
 				chunks[i].data[index] = 0;//(_y <= cap);
 			}
 
-			unsigned int cap = rand()%32;
+			unsigned int cap = rand() % 32;
 			for(unsigned int _x = 0; _x < CHUNK_LENGTH; _x++) {
 				for(unsigned int _y = 0; _y < CHUNK_HEIGHT; _y++) {
 					for(unsigned int _z = 0; _z < CHUNK_LENGTH; _z++) {
 						unsigned int j = (_z * CHUNK_HEIGHT + _y) * CHUNK_LENGTH + _x;
 
-						chunks[i].data[j] = (_y >= cap);// && (_z > 0 && _z < CHUNK_LENGTH) && (_x > 0 && _x < CHUNK_LENGTH);
+						chunks[i].data[j] = (_y >= cap + (rand() % 16));// && (_z > 0 && _z < CHUNK_LENGTH) && (_x > 0 && _x < CHUNK_LENGTH);
 					}
 				}
 			}
@@ -102,15 +103,14 @@ void Chunk_generateMesh(uint chunk_id) {
 							chunk_neighbour.x += (chunk_neighbour.x < 0) * CHUNKS_RADIUS;
 							chunk_neighbour.x -= (chunk_neighbour.x == CHUNKS_RADIUS) * CHUNKS_RADIUS;
 
-							chunk_neighbour.y = chunks[chunk_id].y + neighbour_dirs[i].y;
+							chunk_neighbour.y = chunks[chunk_id].y + neighbour_dirs[i].z;
 							chunk_neighbour.y += (chunk_neighbour.y < 0) * CHUNKS_RADIUS;
 							chunk_neighbour.y -= (chunk_neighbour.y == CHUNKS_RADIUS) * CHUNKS_RADIUS;
 
 							uint chunk_neighbour_id = chunk_neighbour.y * CHUNKS_RADIUS + chunk_neighbour.x;
 
 							Vector3 neighbour_pos;
-							// TODO: FIX X DIRECTION NOT WORKING
-							neighbour_pos.x = x + neighbour_dirs[i].x;
+							neighbour_pos.x = x - neighbour_dirs[i].x;
 							neighbour_pos.x += (neighbour_pos.x < 0) * CHUNK_LENGTH;
 							neighbour_pos.x -= (neighbour_pos.x == CHUNK_LENGTH) * CHUNK_LENGTH;
 
@@ -119,12 +119,6 @@ void Chunk_generateMesh(uint chunk_id) {
 							neighbour_pos.z = z + neighbour_dirs[i].z;
 							neighbour_pos.z += (neighbour_pos.z < 0) * CHUNK_LENGTH;
 							neighbour_pos.z -= (neighbour_pos.z == CHUNK_LENGTH) * CHUNK_LENGTH;
-
-							printf("x y z: 		%i, %i, %i\n", x, y, z);
-							printf("neighbour dir:  %f, %f, %f\n", neighbour_dirs[i].x, neighbour_dirs[i].y, neighbour_dirs[i].z);
-							printf("neighbour pos:  %f, %f, %f\n", neighbour_pos.x, neighbour_pos.y, neighbour_pos.z);
-							printf("chunk id: %i\n", chunk_id);
-							printf("chunk neighbour id: %i\n\n", chunk_neighbour_id);
 
 							neighbour_index = (neighbour_pos.z * CHUNK_HEIGHT + neighbour_pos.y) * CHUNK_LENGTH + neighbour_pos.x;
 							neighbour = chunks[chunk_neighbour_id].data[neighbour_index];
@@ -154,6 +148,17 @@ void Chunk_generateMesh(uint chunk_id) {
 	chunk_meshes[chunk_id] = Mesh_create(verts, uvs, vert_count);
 }
 
+void Chunks_free() {
+	// destroy all meshes
+	Mesh_destroy(&chunk_debug_mesh);
+	for(uint i = 0; i < CHUNKS_RADIUS * CHUNKS_RADIUS; i++)
+		Mesh_destroy(&chunk_meshes[i]);
+	
+	// destroy all chunk data
+	free(chunks);
+	free(chunk_meshes);
+}
+
 void Chunk_test(int amount) {
 	for(unsigned int i = 0; i < CHUNKS_RADIUS * CHUNKS_RADIUS; i++) {
 		for(unsigned int j = 0; j < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT; j++)
@@ -166,24 +171,4 @@ void Chunk_test(int amount) {
 		Chunk_generateMesh(i);
 	}
 
-}
-
-void Chunks_draw(uint shader_program) {
-//	// draw chunk outline
-//	float val[16];
-//	for(unsigned int i = 0; i < chunk_count; i++) {
-//		transform = MatrixTranslate(chunks[i].x * CHUNK_LENGTH, 0, chunks[i].y * CHUNK_LENGTH);
-//
-//		glUniformMatrix4fv(glGetUniformLocation(chunk_debushader, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
-//		glDrawArrays(GL_TRIANGLES, 0, 36);
-//	}
-//
-//	glUseProgram(shader_program);
-//	for(unsigned int i = 0; i < chunk_count; i++) {
-//		transform = MatrixMultiply(MatrixRotateX(PI), MatrixTranslate(chunks[i].x * CHUNK_LENGTH, -CHUNK_HEIGHT * 2, chunks[i].y * CHUNK_LENGTH));
-//
-//		glUniformMatrix4fv(glGetUniformLocation(shader_program, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
-//		Mesh_bind(chunk_meshes[i]);
-//		glDrawArrays(GL_TRIANGLES, 0, chunk_meshes[i].vertex_count);
-//	}
 }

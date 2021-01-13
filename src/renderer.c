@@ -9,6 +9,7 @@
 #include "../include/renderer.h"
 #include "../include/chunks_internal.h"
 #include "../include/util.h"
+#include "../include/debug.h"
 
 static GLFWwindow* window;
 static Camera* camera;
@@ -71,10 +72,11 @@ void Renderer_init(Camera* cam, int width, int height) {
 
 	block_shader = load_shader("assets/vert.glsl", "assets/frag.glsl");
 	debug_chunk_shader = load_shader("assets/vert.glsl", "assets/debug_chunk_frag.glsl");
-	texture = load_texture("assets/thing.png");
+	texture = load_texture("assets/rock.png");
 }
 
 void Renderer_display() {
+	glfwPollEvents();
 	// draw chunks
 
 	Matrix transform = MatrixIdentity();
@@ -88,6 +90,16 @@ void Renderer_display() {
 
 	for(unsigned int i = 0; i < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT; i++) {
 		transform = MatrixTranslate(chunks[i].x * CHUNK_LENGTH, 0, chunks[i].y * CHUNK_LENGTH);
+
+		glUniformMatrix4fv(glGetUniformLocation(block_shader, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
+		Mesh_bind(chunk_meshes[i]);
+		glDrawArrays(GL_TRIANGLES, 0, chunk_meshes[i].vertex_count);
+	}
+
+
+	// TODO: test if changing transform multiplication order in shader makes thingy work
+	for(unsigned int i = 0; i < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT; i++) {
+		transform = MatrixMultiply(MatrixScale(1, -1, 1), MatrixTranslate(chunks[i].x * CHUNK_LENGTH, -CHUNK_HEIGHT * 2, chunks[i].y * CHUNK_LENGTH));
 
 		glUniformMatrix4fv(glGetUniformLocation(block_shader, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
 		Mesh_bind(chunk_meshes[i]);
@@ -112,12 +124,12 @@ void Renderer_display() {
 
 void Renderer_clear() {
 	glfwSwapBuffers(window);
+	glad_glClearColor(0, 0, 0, 1);
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+// TODO: actually implement this
 void Renderer_free() {
-	for(unsigned int i = 0; i < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT; i++) {
-		Mesh_destroy(&chunk_meshes[i]);
-	}
+	glfwTerminate();
 }

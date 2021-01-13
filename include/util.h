@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+#define debug_print(x) _debug_print(x, __LINE__, __FILE__);
+#define this_ran() _debug_print("This ran", __LINE__, __FILE__);
+
 inline float square_root(float number) { 
 	int i; 
 	float x, y; 

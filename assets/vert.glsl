@@ -12,20 +12,19 @@ uniform mat4 view;
 uniform mat4 transform;
 
 void main() {
+
 	TexCoord = aTexCoord;
 	pos = transform * vec4(aPos, 1.f);
 
-	float positive = 0;
-	float off = 0;
-	positive += float(pos.y > -32);
-	positive -= float(pos.y <= -32);
+//	float isPositive = float(pos.y <= -32);
+//	float positive = 1;
+//	float off = 1;
+//	positive -= 2 * float(pos.y <= -32);
+//
+//	off += 1024 * float(pos.y <= -32);
 
-	off += 2048 * float(pos.y <= -32);
+	float dist = distance(pos.xyz, vec3(cam_pos.x, cam_pos.y, cam_pos.z));
 
-	float dist = distance(pos.xyz, vec3(cam_pos.x, cam_pos.y + float(pos.y <= -32) * -64, cam_pos.z));
-
-	test = positive;
-
-	pos.y -= positive * ((dist * dist) / 500.f) + off;
+	pos.y -= ((dist * dist) / 300.f);// - off;
 	gl_Position = projection * view * pos;
 }

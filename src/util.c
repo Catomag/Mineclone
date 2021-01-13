@@ -4,6 +4,7 @@
 #include "../include/util.h"
 #include "../include/glad/glad.h"
 #include "../include/stb_image.h"
+#include "../include/debug.h"
 
 //------------------------------------------------------------------------
 

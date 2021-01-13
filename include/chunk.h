@@ -6,7 +6,7 @@
 
 #define CHUNK_LENGTH 8 
 #define CHUNK_HEIGHT 32
-#define CHUNKS_RADIUS 2
+#define CHUNKS_RADIUS 40 
 
 // blocks are stored as ids that can be referenced later on
 typedef byte block_id;
@@ -19,10 +19,9 @@ typedef struct {
 } Chunk;
 
 void Chunks_init();
-void Chunks_destroy();
+void Chunks_free();
 
 void Chunk_test(int amount);
-void Chunks_draw();
 void Chunks_setBlock(uint chunk_id, Vector2 block_pos, block_id type);
 void Chunks_setBlockRadius(uint chunk_id, Vector2 block_pos, uint radius, block_id type);
 

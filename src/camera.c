@@ -1,4 +1,5 @@
 #include "../include/glad/glad.h"
+#include "../include/debug.h"
 #include "../include/camera.h"
 
 Camera Camera_create(float fov, float width, float height, float near, float far) {

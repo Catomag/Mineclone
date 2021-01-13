@@ -2,7 +2,7 @@ SOURCES = $(wildcard ./src/*.c)
 SRC = $(addprefix src/, $(SOURCES))
 OBJ = $(addsuffix .o, $(addprefix bin/, $(basename $(notdir $(SRC)))));
 INCLUDE = -I include
-CFLAGS = -W -mrecip -ffast-math -O2# -D_DEBUG_
+CFLAGS = -W -mrecip -ffast-math -O2 -D_DEBUG_
 
 all: mineclone
 

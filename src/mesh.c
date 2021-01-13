@@ -2,6 +2,7 @@
 
 #include "../include/glad/glad.h"
 #include "../include/mesh.h"
+#include "../include/debug.h"
 
 Mesh Mesh_create(Vector3* vertices, Vector2* uvs, uint vertex_count) {
 	Mesh mesh;

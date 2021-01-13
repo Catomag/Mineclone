@@ -14,20 +14,13 @@
 #include "../include/camera.h"
 #include "../include/renderer.h"
 #include "../include/chunk.h"
+#include "../include/debug.h"
 
-#define debug_print(x) _debug_print(x, __LINE__, __FILE__);
-#define this_ran() _debug_print("This ran", __LINE__, __FILE__);
 
 
 //------------------------------------------------------------------------
 
 Camera cam;
-
-//------------------------------------------------------------------------
-
-void _debug_print(const char* message, uint line, const char* filename) {
-	printf("%s, LINE: %u, FILE: %s\n", message, line, filename);
-}
 
 //------------------------------------------------------------------------
 
@@ -116,13 +109,13 @@ int main() {
 		Camera_update(&cam, (Vector3) { 0, 1, 0 });
 
 		Renderer_clear();
-
 		Renderer_display();
-
-		glfwPollEvents();
 	}
 
+	Chunks_free();
 	Renderer_free();
-	glfwTerminate();
+
+	debug_log();
+	debug_log_empty();
 	return 0;
 }
