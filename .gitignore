@@ -1,6 +1,3 @@
-*.so
-*.out
-.ccls-cache/*
-
-mineclone
-bin/*.o
+/*
+.*
+!/.gitignore
