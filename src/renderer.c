@@ -123,8 +123,8 @@ void Renderer_display() {
 	Vector3 chunk_pos;
 	chunk_pos = world_to_chunk(camera->pos);
 
-//	printf("cam pos: %f, %f, %f\n", camera->pos.x, camera->pos.y, camera->pos.z);
-//	printf("cam pos: %f, %f, %f\n", chunk_pos.x, chunk_pos.y, chunk_pos.z);
+	printf("cam pos: %f, %f, %f\n", camera->pos.x, camera->pos.y, camera->pos.z);
+	printf("cam pos: %f, %f, %f\n", chunk_pos.x, chunk_pos.y, chunk_pos.z);
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
@@ -138,15 +138,22 @@ void Renderer_display() {
 	glUniform3f(glGetUniformLocation(block_shader, "cam_pos"), camera->pos.x, camera->pos.y, camera->pos.z);
 	glUniform1f(glGetUniformLocation(block_shader, "testing"), 0);
 
-	for(unsigned int x = 0; x < CHUNKS_RADIUS; x++) {
-		for(unsigned int y = 0; y < CHUNKS_RADIUS; y++) {
-			int chunk_x = (x + ((int) chunk_pos.x)) % CHUNKS_RADIUS;
-			int chunk_y = (y + ((int) chunk_pos.z)) % CHUNKS_RADIUS;
-			int i = chunk_y * CHUNKS_RADIUS + chunk_x;
-			if(i >= 900)
-				printf("%i\n", i);
+	for(int x = 0; x < CHUNKS_RADIUS; x++) {
+		for(int y = 0; y < CHUNKS_RADIUS; y++) {
+			int i = y * CHUNKS_RADIUS + x;
 
-			transform = MatrixTranslate((chunks[i].x) * CHUNK_LENGTH, 0, (chunks[i].y) * CHUNK_LENGTH);
+			int chunk_x;
+			int chunk_y;
+
+			chunk_x = x;
+			chunk_x += (chunk_pos.x - x >= (CHUNKS_RADIUS / 2)) * (CHUNKS_RADIUS);
+			chunk_x -= (chunk_pos.x - x < -(CHUNKS_RADIUS / 2)) * (CHUNKS_RADIUS);
+
+			chunk_y = y;
+			chunk_y += (chunk_pos.z - y >= (CHUNKS_RADIUS / 2)) * (CHUNKS_RADIUS);
+			chunk_y -= (chunk_pos.z - y < -(CHUNKS_RADIUS / 2)) * (CHUNKS_RADIUS);
+
+			transform = MatrixTranslate((chunk_x) * CHUNK_LENGTH, 0, (chunk_y) * CHUNK_LENGTH);
 
 			glUniformMatrix4fv(glGetUniformLocation(block_shader, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
 			Mesh_bind(chunk_meshes[i]);
@@ -200,12 +207,13 @@ void Renderer_display() {
 //	glUniformMatrix4fv(glGetUniformLocation(debug_chunk_shader, "view"), 1, GL_FALSE, MatrixToFloatV(camera->view).v);
 //	glUniformMatrix4fv(glGetUniformLocation(debug_chunk_shader, "projection"), 1, GL_FALSE, MatrixToFloatV(camera->projection).v);
 //	glUniform3f(glGetUniformLocation(debug_chunk_shader, "cam_pos"), camera->pos.x, camera->pos.y, camera->pos.z);
+//	printf("this line\n");
 //
-//	for(unsigned int i = 0; i < CHUNK_LENGTH * CHUNK_LENGTH * CHUNK_HEIGHT; i++) {
+//	for(unsigned int i = 0; i < CHUNKS_RADIUS * CHUNKS_RADIUS; i++) {
 //		transform = MatrixTranslate(chunks[i].x * CHUNK_LENGTH + (CHUNK_LENGTH / 2.f) - .5f, (CHUNK_HEIGHT / 2.f) - .5f, chunks[i].y * CHUNK_LENGTH + (CHUNK_LENGTH / 2.f) - .5f);
 //
 //		glUniformMatrix4fv(glGetUniformLocation(debug_chunk_shader, "transform"), 1, GL_FALSE, MatrixToFloatV(transform).v);
-//		glDrawArrays(GL_TRIANGLES, 0, 36);
+//		glDrawArrays(GL_LINES, 0, 36);
 //	}
 }
 

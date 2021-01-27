@@ -40,8 +40,10 @@ int main() {
 	float angle = -1.f;
 	float delta = 0;
 
+	float total_time = 0;
 	float prev_time = 0;
 	float pos = 0;
+	int first_loop = 1;
 
 	Vector2 mouse_pos   = { 0 };
 	Vector2 mouse_prev  = { 0 };
@@ -50,8 +52,9 @@ int main() {
 	Chunks_init();
 
 	while(!Renderer_shouldClose()) {
-		delta = glfwGetTime() - prev_time;
-		prev_time = glfwGetTime();
+		total_time = glfwGetTime();
+		delta = total_time - prev_time;
+		prev_time = total_time;
 
 		double mouse_x, mouse_y;
 		get_cursor(&mouse_x, &mouse_y);
@@ -63,13 +66,20 @@ int main() {
 		mouse_delta.y = mouse_pos.y - mouse_prev.y;
 		mouse_prev = mouse_pos;
 
-		cam.pitch -= mouse_delta.y * delta * 0.05f;
-		cam.yaw += mouse_delta.x * delta * 0.05f;
+		cam.pitch -= mouse_delta.y * delta * 0.035f;
+		cam.yaw += mouse_delta.x * delta * 0.035f;
 
 		if(pos > 1.f || pos < -1.f)
 			angle *= -1.f;
 
 		pos += angle * delta * .5f;
+
+		printf("delta: %f\n", delta);
+		// stop program from doing dumb stuff
+		if(delta >= 2.f && !first_loop) {
+			printf("stopped program because it was running too slow\n");
+			break;
+		}
 
 		if(get_key(GLFW_KEY_LEFT_SUPER))
 			set_input_mode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -78,7 +88,7 @@ int main() {
 
 		float move_speed = 1.f;
 		if(get_key(GLFW_KEY_LEFT_SHIFT))
-			move_speed = 2.f;
+			move_speed = 4.f;
 
 		if(get_key(GLFW_KEY_W))
 			cam.pos = Vector3Add(cam.pos, Vector3Scale(cam.front, delta * 6.f * move_speed));
@@ -110,11 +120,18 @@ int main() {
 //			}
 //		}
  
+		cam.pos.x -= (cam.pos.x > CHUNKS_RADIUS * CHUNK_LENGTH) * CHUNKS_RADIUS * CHUNK_LENGTH;
+		cam.pos.x += (cam.pos.x < -0.f) * CHUNKS_RADIUS * CHUNK_LENGTH;
+
+		cam.pos.z -= (cam.pos.z > CHUNKS_RADIUS * CHUNK_LENGTH) * CHUNKS_RADIUS * CHUNK_LENGTH;
+		cam.pos.z += (cam.pos.z < -0.f) * CHUNKS_RADIUS * CHUNK_LENGTH;
+
 		Camera_update(&cam, (Vector3) { 0, 1, 0 });
 
 		Chunks_update();
 		Renderer_clear();
 		Renderer_display();
+		first_loop = 0;
 	}
 
 	Chunks_free();

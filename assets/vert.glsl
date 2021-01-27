@@ -17,6 +17,10 @@ void main() {
 
 	float dist = distance(pos.xyz, vec3(cam_pos.x, cam_pos.y, cam_pos.z));
 
-	//pos.y -= ((dist * dist) / 400.f);// - off;
+//	float dist = pos.x * pos.x + pos.z * pos.z;
+//	pos.y -= dist / 200;
+
+	pos.y -= ((dist * dist) / 300.f);// - off;
+	
 	gl_Position = projection * view * pos;
 }

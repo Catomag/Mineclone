@@ -5,8 +5,8 @@
 #include "types.h"
 
 #define CHUNK_LENGTH 8 
-#define CHUNK_HEIGHT 64
-#define CHUNKS_RADIUS 30 
+#define CHUNK_HEIGHT 32
+#define CHUNKS_RADIUS 25 
 #define CHUNKS_RAYCAST_MAX_STEPS 100
 
 // blocks are stored as ids that can be referenced later on
